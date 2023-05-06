@@ -1,7 +1,8 @@
 import {useEffect, useState} from 'react';
 import { KeyboardAvoidingView, TouchableOpacity } from 'react-native';
 import {TextInput, Text, View, StyleSheet} from 'react-native';
-import { auth } from '../../firebase';
+import { auth, db } from '../../firebase';
+import { doc, setDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { COLORS } from '../../style/colors';
 
@@ -23,7 +24,21 @@ export default function LoginScreen({navigation}) {
         createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
             const user =  userCredential.user;
-            console.log(user.email)
+            console.log(user.email);
+
+            //add to firestore db
+            setDoc(doc(db, "users", user.uid), {
+                userId: user.uid,
+                email: user.email,
+                username: email.split("@")[0],
+                photo: null
+            })
+            .then(() => {
+                console.log("Document successfully written!");
+            })
+            .catch((error) => {
+                console.error("Error writing document: ", error);
+            });
         })
         .catch(error => alert(error.message));
     }
@@ -32,6 +47,7 @@ export default function LoginScreen({navigation}) {
         signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
             user = userCredential.user;
+            //console.log(user)
             navigation.navigate("Main");
         })
         .catch((error) => {
