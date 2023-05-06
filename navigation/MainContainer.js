@@ -32,7 +32,7 @@ function MainTabNavigator() {
             iconName = focused ? 'home' : 'home-outline';
             iconColor = focused ? COLORS.darkBlue : COLORS.grey;
           } else if (rn === profileName) {
-            iconName = focused ? 'list' : 'list-outline';
+            iconName = focused ? 'person' : 'person-outline';
             iconColor = focused ? COLORS.darkBlue : COLORS.grey;
           }
           return <Ionicons name={iconName} size={size} color={iconColor}></Ionicons>
@@ -45,8 +45,8 @@ function MainTabNavigator() {
 
       >
 
-      <Tab.Screen name={homeName} component={HomeScreen}></Tab.Screen>
-      <Tab.Screen name={profileName} component={ProfileScreen}></Tab.Screen>
+      <Tab.Screen options={{headerShown: false}} name={homeName} component={HomeScreen}></Tab.Screen>
+      <Tab.Screen options={{headerShown: false}} name={profileName} component={ProfileScreen}></Tab.Screen>
 
     </Tab.Navigator>
   );

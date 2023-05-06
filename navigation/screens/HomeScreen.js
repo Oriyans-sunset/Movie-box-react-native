@@ -1,36 +1,111 @@
 import * as React from 'react';
-import {FlatList, Text, View, StyleSheet} from 'react-native';
+import {TextInput, FlatList, Text, View, StyleSheet, Image, TouchableOpacity, KeyboardAvoidingView} from 'react-native';
 import {auth} from "../../firebase"
 import {useState, useEffect} from 'react'
 import { COLORS } from '../../style/colors';
+import Autocomplete from 'react-native-autocomplete-input';
 
 export default function HomeScreen() {
     const [data, setData] = useState();
-
+    const API_KEY = "8b3351fbc55348927d563617f46f2114";
+    const movie_base_uri = 'https://api.themoviedb.org/3/movie/popular?api_key=';
+    const poster_base_uri = "https://image.tmdb.org/t/p/original/";
+  
     useEffect(() => {
       var requestOptions = {
         method: 'GET',
         redirect: 'follow'
       };
        
-      fetch('https://imdb-api.com/en/API/MostPopularMovies/k_334h0qn0', requestOptions)
+      fetch( movie_base_uri + API_KEY, requestOptions)
         .then(response => response.json())
-        .then(json => setData(json.items))
+        .then(json => setData(json.results))
         .catch(error => console.log('error', error));
       }, []);
     
+      const renderItem = ({ item }) => (
+        <View style={styles.item}>
 
-    return (
-    <View style={styles.container}>
-        <View style={styles.writtenContainer}>
-            <Text style={styles.written}>
-                This is the About Screen of {auth.currentUser?.email}
-            </Text>
+          <View style={styles.itemImageContainer}>
+            <Image style={styles.itemImage}
+            source={{ uri:  poster_base_uri + item.poster_path }}>
+            </Image>
+          </View>
+
+          <View style={styles.itemInfo}>
+            <Text numberOfLines={2} ellipsizeMode='tail' style={styles.itemTitle}>{item.title}</Text>
+            <Text style={styles.itemYear}>{item.release_date}</Text>
+            <View style={styles.itemInfoOverviewAndButton}>
+              <Text numberOfLines={4} ellipsizeMode='tail' style={styles.itemDescription}>{item.overview}</Text>
+              <TouchableOpacity style={styles.addButton}><Text style={styles.addButtonText}>Watch Later +</Text></TouchableOpacity>
+            </View>
+          </View>
+          
         </View>
+
+        
+      );
+
+    //autocomplete
+    const [query, setQuery] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
+
+    const handleQueryChange = async (text) => {
+      setQuery(text);
+
+      const response = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=8b3351fbc55348927d563617f46f2114&language=en-US&query=${text}`);
+      const data = await response.json();
+
+      setSuggestions(data.results.map((movie) => movie.title));
+    };
+
+    const renderTextInput = (props) => {
+      return (
+        <View style={styles.textInputContainer}>
+          <TextInput
+            {...props}
+            style={{ fontSize: 17, color: COLORS.black }}
+            placeholder="Search Movies"
+            placeholderTextColor={COLORS.grey}
+          />
+        </View>
+      );
+    };
+
+    return ( 
+    <View style={styles.container}>
+        <View style={styles.searchContainer}>
+          <View style={styles.autocompleteContainer}>
+              <Autocomplete 
+              data={suggestions}
+              value={query}
+              onChangeText={handleQueryChange}
+              placeholder="Search..."
+              renderTextInput={renderTextInput}
+              inputContainerStyle = {{ borderColor: COLORS.black}}
+              flatListProps={{
+                renderItem: ({ item }) => (
+                  <TouchableOpacity style={styles.suggestionItem}>
+                    <Text style={styles.suggestionText}>{item}</Text>
+                  </TouchableOpacity>
+                ),
+                keyExtractor: (item, index) => index.toString(),
+                style: styles.suggestionList,
+                contentContainerStyle: { flexGrow: 1 },
+              }}
+              
+            />
+          </View>
+        </View>
+
         <View style={styles.listView}>
+          <View style={styles.titleView}>
+            <Text style={styles.titleText}>Popular This Week</Text>
+          </View>
+
             <FlatList 
             data={data}
-            renderItem={({item}) => <View style={styles.item}><Text style={styles.textItem}>{item.title}</Text></View> }
+            renderItem={renderItem}
             keyExtractor={item => item.id.toString()}
             />
         </View>
@@ -42,38 +117,101 @@ export default function HomeScreen() {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      marginTop: 30,
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: COLORS.pink
     },
-    writtenContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        backgroundColor: "black",
-        width: "100%",
-        borderRadius: 10
+    textInputContainer: { 
+      backgroundColor: 'white',
+      borderRadius: 15,
+      paddingHorizontal: 10,
+      paddingVertical: 10,
     },
-    written: {
-        color: "white",
-        fontSize: 25,
-        marginTop: 10,
-        padding: 5,
-        fontWeight: 'bold'
+    searchContainer: {
+      zIndex: 1,
+      marginTop: 30,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      backgroundColor: "black",
+      width: '100%',
     },
-    listView: {
-        padding: 2,
-        marginTop: 5
+    autocompleteContainer: {
+      width: '99.5%',
+      marginTop: 100,
+      padding: 10
     },
+    suggestionList: {
+      borderRadius: 15
+    },
+    suggestionItem: {
+      padding: 10,
+      backgroundColor: COLORS.white,
+      borderColor: COLORS.black,
+      borderTopWidth: 2
+    },
+    suggestionText: {
+      
+   },
+   titleView: {
+    width: '100%',
+    marginTop: 10,
+    marginBottom: 10
+   },
+   titleText: {
+    fontSize: 25,
+    fontWeight: 'bold'
+   },
     item: {
         backgroundColor: COLORS.darkBlue,
-        margin: 5,
-        padding: 7,
-        borderRadius: 5
+        marginBottom: 15,
+        padding: 10,
+        borderRadius: 15,
+        flexDirection: 'row',
+        width: '100%'
     },
-    textItem: {
-        color: "white",
+    itemImageContainer: { 
+      flexGrow: 1
+    },
+    itemImage: {
+      borderRadius: 15,
+      borderColor: "white",
+      borderWidth: 2,
+      width: 120, 
+      height: 180
+    },
+    itemInfo: {
+      backgroundColor: COLORS.lightGreen,
+      padding: 5,
+      borderRadius: 15,
+      width: '60%',
+    },
+    itemTitle: {
+        color: COLORS.black,
         fontSize: 20,
         fontWeight: "500"
+    },
+    itemYear: {
+      color: COLORS.grey
+    },
+    itemInfoOverviewAndButton: {
+      flex: 1,
+      justifyContent: 'space-between',
+      marginTop: 5,
+    },
+    itemDescription: {
+      
+    },
+    addButton: {
+      
+      marginTop: 4,
+      backgroundColor: COLORS.darkBlue,
+      width: '100%',
+      alignItems: 'center',
+      padding: 5,
+      borderRadius: 15
+    },
+    addButtonText: {
+      fontWeight: 'bold', 
+      color: COLORS.white
     }
   });
