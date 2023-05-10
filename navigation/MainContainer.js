@@ -4,16 +4,18 @@ import { NavigationContainer } from "@react-navigation/native"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { createStackNavigator } from "@react-navigation/stack"
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import { COLORS } from '../style/colors';
 
 //screens
 import HomeScreen from "./screens/HomeScreen"
 import ProfileScreen from "./screens/ProfileScreen"
 import LoginScreen from "./screens/LoginScreen"
-import { COLORS } from '../style/colors';
+import LibraryScreen from './screens/LibraryScreen';
 
 //Screen names
 const homeName = 'Home';
 const profileName = 'Profile';
+const libraryName = 'Library'
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -23,6 +25,7 @@ function MainTabNavigator() {
     <Tab.Navigator
     initialRouteName={homeName}
       screenOptions={({ route }) => ({
+
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
           let iconColor;
@@ -34,7 +37,11 @@ function MainTabNavigator() {
           } else if (rn === profileName) {
             iconName = focused ? 'person' : 'person-outline';
             iconColor = focused ? COLORS.darkBlue : COLORS.grey;
+          } else if (rn === libraryName) {
+            iconName = focused ? 'list' : 'list-outline';
+            iconColor = focused ? COLORS.darkBlue : COLORS.grey;
           }
+
           return <Ionicons name={iconName} size={size} color={iconColor}></Ionicons>
         },
         tabBarActiveTintColor: COLORS.darkBlue,
@@ -46,8 +53,9 @@ function MainTabNavigator() {
       >
 
       <Tab.Screen options={{headerShown: false}} name={homeName} component={HomeScreen}></Tab.Screen>
+      <Tab.Screen options={{headerShown: false}} name={libraryName} component={LibraryScreen}></Tab.Screen>
       <Tab.Screen options={{headerShown: false}} name={profileName} component={ProfileScreen}></Tab.Screen>
-
+  
     </Tab.Navigator>
   );
 }

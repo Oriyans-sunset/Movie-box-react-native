@@ -31,7 +31,8 @@ export default function LoginScreen({navigation}) {
                 userId: user.uid,
                 email: user.email,
                 username: email.split("@")[0],
-                photo: null
+                photo: null,
+                watchlist: []
             })
             .then(() => {
                 console.log("Document successfully written!");

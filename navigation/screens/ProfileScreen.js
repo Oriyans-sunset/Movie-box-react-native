@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { COLORS } from '../../style/colors';
-import { db, auth } from '../../firebase';
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from "firebase/firestore";
+import {db, auth} from '../../firebase';
 
 export default function ProfileScreen({navigation}) {
 
@@ -12,11 +12,11 @@ export default function ProfileScreen({navigation}) {
 
   useEffect(() => {
     async function fetchUser() {
-      const docRef = doc(db, "users", auth.currentUser.uid);
-      const docSnap = await getDoc(docRef);
+      const userDocumentReference = doc(db, "users", auth.currentUser.uid);
+      const docSnap = await getDoc(userDocumentReference);
 
       if (docSnap.exists()) {
-        console.log("Document data:", docSnap.data());
+
         setUsername(docSnap.data().username);
         setEmail(docSnap.data().email);
       } else {
@@ -30,20 +30,21 @@ export default function ProfileScreen({navigation}) {
   
     return (
       <View style={styles.container}>
-        <Image
-        style={styles.profileImage}
-        source={{ uri: 'https://fastly.picsum.photos/id/989/200/300.jpg?hmac=ogky6xHUEi9lZWaqSfoblaQBusCIKbpFT1HQ2h4jZM0' }}
-        />
+        <View style={styles.userInfo}>
+          <Image
+          style={styles.profileImage}
+          source={{ uri: 'https://fastly.picsum.photos/id/989/200/300.jpg?hmac=ogky6xHUEi9lZWaqSfoblaQBusCIKbpFT1HQ2h4jZM0' }}
+          />
 
-        <Text style={styles.username}>{username}</Text>
+          <Text style={styles.username}>{username}</Text>
 
-        <View style={styles.mainInfoCotainer}>
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoLabel}>Email:</Text>
-            <Text style={styles.infoValue}>{email}</Text>
+          <View style={styles.mainInfoCotainer}>
+            <View style={styles.usernameAndEmailInfoContainer}>
+              <Text style={styles.emailInfoLabel}>Email:</Text>
+              <Text style={styles.emailInfoValue}>{email}</Text>
+            </View>
           </View>
         </View>
-
       </View>
     );
   }
@@ -55,6 +56,12 @@ export default function ProfileScreen({navigation}) {
       alignItems: 'center',
       padding: 20,
     },
+    userInfo: {
+      marginTop: 30,
+      backgroundColor: "grey",
+      justifyContent: "center",
+      alignItems: 'center'
+    },  
     profileImage: {
       width: 150,
       height: 150,
@@ -66,17 +73,17 @@ export default function ProfileScreen({navigation}) {
       fontWeight: 'bold',
       marginBottom: 10,
     },
-    infoContainer: {
+    usernameAndEmailInfoContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       marginBottom: 10,
     },
-    infoLabel: {
+    emailInfoLabel: {
       fontSize: 18,
       fontWeight: 'bold',
       marginRight: 10,
     },
-    infoValue: {
+    emailInfoValue: {
       fontSize: 18,
     },
   });
