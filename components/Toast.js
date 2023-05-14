@@ -12,11 +12,12 @@ export const toastConfig = {
   success: (props) => (
     <BaseToast
       {...props}
-      style={{ borderLeftColor: COLORS.pink }}
+      style={{ borderLeftColor: COLORS.pink, width: "97%" }}
       contentContainerStyle={{ paddingHorizontal: 15 }}
       text2Style={{
         fontSize: 17,
-        fontWeight: "400",
+        fontWeight: "300",
+        color: COLORS.darkBlue,
       }}
     />
   ),

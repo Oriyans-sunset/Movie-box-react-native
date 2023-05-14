@@ -3,12 +3,19 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { COLORS } from "../style/colors";
 import { poster_base_uri } from "@env";
 
-const MovieCard = ({ item, movieFunction, screenName }) => (
+const MovieCard = ({
+  item,
+  movieFunction,
+  watchedFuntion,
+  movieListName,
+  screenName,
+}) => (
   <View style={styles.item}>
     <View style={styles.itemImageContainer}>
       <Image
         style={styles.itemImage}
         source={{ uri: poster_base_uri + item.poster_path }}
+        loadingIndicatorSource={require("../style/loading-animation.json")}
       />
     </View>
 
@@ -25,24 +32,59 @@ const MovieCard = ({ item, movieFunction, screenName }) => (
         >
           {item.overview}
         </Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => movieFunction(item.id)}
-        >
-          {(() => {
-            if (screenName === "Home") {
-              return <Text style={styles.buttonText}>Watch Later +</Text>;
-            } else if (screenName === "Library") {
-              return <Text style={styles.buttonText}>Remove -</Text>;
-            }
 
-            return null;
-          })()}
-        </TouchableOpacity>
+        {(() => {
+          if (screenName === "Home") {
+            return (
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => movieFunction(item.id)}
+              >
+                <Text style={styles.buttonText}>Watch Later +</Text>
+              </TouchableOpacity>
+            );
+          } else if (screenName === "Library") {
+            if (movieListName === "Watched") {
+              return (
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => movieFunction(item.id)}
+                >
+                  <Text style={styles.buttonText}>Remove -</Text>
+                </TouchableOpacity>
+              );
+            } else {
+              return (
+                <View style={styles.mainButtonContainer}>
+                  <View style={styles.buttonsContainer}>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => movieFunction(item.id)}
+                    >
+                      <Text style={styles.buttonText}>Remove -</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={{ width: 5 }}></View>
+                  <View style={styles.buttonsContainer}>
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => watchedFuntion(item.id)}
+                    >
+                      <Text style={styles.buttonText}>Watched</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            }
+          }
+
+          return null;
+        })()}
       </View>
     </View>
   </View>
 );
+
 const styles = StyleSheet.create({
   item: {
     backgroundColor: COLORS.darkBlue,
@@ -81,11 +123,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 5,
   },
-  itemDescription: {},
-  addButton: {
+  mainButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  buttonsContainer: {
+    flex: 1,
+  },
+  button: {
     marginTop: 4,
     backgroundColor: COLORS.darkBlue,
-    width: "100%",
     alignItems: "center",
     padding: 5,
     borderRadius: 15,

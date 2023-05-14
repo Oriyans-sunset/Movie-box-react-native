@@ -7,7 +7,7 @@ export default function App() {
   return (
     <>
       <MainContainer></MainContainer>
-      <Toast config={toastConfig} ref={(ref) => {}} />
+      <Toast config={toastConfig} />
     </>
   );
 }

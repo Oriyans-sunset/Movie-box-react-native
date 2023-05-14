@@ -17,6 +17,7 @@ import {
   onSnapshot,
   updateDoc,
   arrayRemove,
+  arrayUnion,
 } from "firebase/firestore";
 import MovieCardList from "../../components/MovieCardList";
 import { poster_base_uri, TMDB_API_KEY, movie_search_base_uri } from "@env";
@@ -26,32 +27,35 @@ import MovieCard from "../../components/MovieCard";
 import { Toast } from "react-native-toast-message/lib/src/Toast";
 
 import LottieView from "lottie-react-native";
+import * as Haptics from "expo-haptics";
 
 export default function LibraryScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(null);
+  const [dropdownValue, setDropdownValue] = useState("Watchlist");
   const [items, setItems] = useState([
     { label: "Watched", value: "Watched" },
     { label: "Watchlist", value: "Watchlist" },
   ]);
 
-  const [watchlist, setWatchList] = useState([]);
+  const [movieList, setMovieList] = useState([]);
 
   const userDocumentReference = doc(db, "users", auth.currentUser.uid);
 
   //useEffect start
   useEffect(() => {
-    console.log("use effect called");
-
-    function fetchUserWatchlist() {
+    function fetchUserMovielist() {
       onSnapshot(userDocumentReference, (doc) => {
-        fetchData(doc.data().watchlist);
+        if (dropdownValue == "Watched") {
+          fetchData(doc.data().watched);
+        } else {
+          fetchData(doc.data().watchlist);
+        }
       });
     }
 
-    fetchUserWatchlist();
+    fetchUserMovielist();
 
     async function fetchData(movieIDs) {
       try {
@@ -62,26 +66,60 @@ export default function LibraryScreen({ navigation }) {
             )
           )
         );
-        setWatchList(results);
+        setMovieList(results);
       } catch (error) {
         console.error(error);
         alert("Error Timeout. Please try again later.");
       }
       setIsLoading(false); // set isLoading to false after data is retrieved
     }
-  }, [useIsFocused]);
+  }, [useIsFocused, dropdownValue]);
   //useEffect end
 
   const removeMovieFromWatchlist = async (movie_id) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    let toastMessage = "";
+    let fieldToUpdate = "";
+    if (dropdownValue == "Watched") {
+      toastMessage = "Removed from Watched";
+      fieldToUpdate = "watched";
+    } else {
+      toastMessage = "Removed from Watchlist";
+      fieldToUpdate = "watchlist";
+    }
+
     if (userDocumentReference) {
       await updateDoc(userDocumentReference, {
-        watchlist: arrayRemove(movie_id.toString()),
+        [fieldToUpdate]: arrayRemove(movie_id.toString()),
       })
         .then(() => {
           Toast.show({
             type: "success", // Can be 'success', 'error', 'info', or 'default'
             position: "top", // Can be 'top', 'bottom', 'center'
-            text2: "Removed from wacthlist!",
+            text2: toastMessage,
+            visibilityTime: 1000, // Duration for which the toast is visible (in milliseconds)
+          });
+        })
+        .catch((error) => {
+          console.error("Error removing item from array:", error);
+        });
+    } else {
+      console.log("No such document!");
+    }
+  };
+
+  const addToWatchedList = async (movie_id) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (userDocumentReference) {
+      await updateDoc(userDocumentReference, {
+        watchlist: arrayRemove(movie_id.toString()),
+        watched: arrayUnion(movie_id.toString()),
+      })
+        .then(() => {
+          Toast.show({
+            type: "success", // Can be 'success', 'error', 'info', or 'default'
+            position: "top", // Can be 'top', 'bottom', 'center'
+            text2: "Added to Watched!",
             visibilityTime: 1000, // Duration for which the toast is visible (in milliseconds)
           });
         })
@@ -97,6 +135,8 @@ export default function LibraryScreen({ navigation }) {
     <MovieCard
       item={item}
       movieFunction={removeMovieFromWatchlist}
+      watchedFuntion={addToWatchedList}
+      movieListName={dropdownValue}
       screenName={"Library"}
     />
   );
@@ -130,10 +170,10 @@ export default function LibraryScreen({ navigation }) {
             <View style={styles.filterDropdownContainer}>
               <DropDownPicker
                 open={open}
-                value={value}
+                value={dropdownValue}
                 items={items}
                 setOpen={setOpen}
-                setValue={setValue}
+                setValue={setDropdownValue}
                 setItems={setItems}
                 style={{
                   backgroundColor: COLORS.lightGreen,
@@ -149,7 +189,7 @@ export default function LibraryScreen({ navigation }) {
         </View>
 
         <View style={{ marginTop: 30 }}>
-          <MovieCardList data={watchlist} renderItem={renderItem} />
+          <MovieCardList data={movieList} renderItem={renderItem} />
         </View>
       </View>
     );

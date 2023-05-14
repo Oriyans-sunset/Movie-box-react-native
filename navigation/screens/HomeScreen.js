@@ -17,6 +17,7 @@ import { docSnap, doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 
 import { Toast } from "react-native-toast-message/lib/src/Toast";
+import * as Haptics from "expo-haptics";
 
 import MovieCardList from "../../components/MovieCardList";
 import {
@@ -29,6 +30,7 @@ export default function HomeScreen() {
   const [data, setData] = useState();
 
   const addMovieToWatchlist = async (movie_id) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const userDocumentReference = doc(db, "users", auth.currentUser.uid);
     if (userDocumentReference) {
       await updateDoc(userDocumentReference, {
