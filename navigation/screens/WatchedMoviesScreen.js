@@ -31,12 +31,11 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import LottieView from "lottie-react-native";
 import * as Haptics from "expo-haptics";
 
-export default function LibraryScreen({ navigation }) {
-  const [isLoading, setIsLoading] = useState(true);
-
+export default function WatchedMovieScreen({ navigation }) {
   const [movieList, setMovieList] = useState([]);
 
   const userDocumentReference = doc(db, "users", auth.currentUser.uid);
+  const [isLoading, setIsLoading] = useState(true);
 
   //useEffect start
   useEffect(() => {
@@ -90,87 +89,30 @@ export default function LibraryScreen({ navigation }) {
     }
   };
 
-  const addToWatchedList = async (movie_id) => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (userDocumentReference) {
-      await updateDoc(userDocumentReference, {
-        watchlist: arrayRemove(movie_id.toString()),
-        watched: arrayUnion(movie_id.toString()),
-      })
-        .then(() => {
-          Toast.show({
-            type: "success", // Can be 'success', 'error', 'info', or 'default'
-            position: "top", // Can be 'top', 'bottom', 'center'
-            text2: "Added to Watched!",
-            visibilityTime: 1000, // Duration for which the toast is visible (in milliseconds)
-          });
-        })
-        .catch((error) => {
-          console.error("Error removing item from array:", error);
-        });
-    } else {
-      console.log("No such document!");
-    }
-  };
-
   const renderItem = ({ item }) => (
     <MovieCard
       item={item}
       movieFunction={removeMovieFromWatchlist}
-      watchedFuntion={addToWatchedList}
-      movieListName={"watchlist"}
+      movieListName={"watched"}
       screenName={"Library"}
     />
   );
 
-  if (isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: COLORS.pink,
-        }}
-      >
-        <LottieView
-          source={require("../../style/loading-animation.json")}
-          autoPlay
-          loop
-        />
-      </View>
-    );
-  } else {
-    return (
-      <View style={styles.container}>
-        <View style={styles.mainTopContainer}>
-          <View style={styles.titleAndDropdownContainer}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.titleText}>Library</Text>
-            </View>
-
-            <View style={styles.filterDropdownContainer}>
-              <Button
-                style={styles.showWatchedMoviesButton}
-                title="Watched"
-                color={COLORS.white}
-                onPress={() => navigation.navigate("WatchedMovies")}
-              ></Button>
-              <Ionicons
-                name={"chevron-forward-circle-outline"}
-                color={COLORS.pink}
-                size={20}
-              ></Ionicons>
-            </View>
+  return (
+    <View style={styles.container}>
+      <View style={styles.mainTopContainer}>
+        <View style={styles.titleAndDropdownContainer}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.titleText}>Watched Movies</Text>
           </View>
         </View>
-
-        <View style={{ marginTop: 30 }}>
-          <MovieCardList data={movieList} renderItem={renderItem} />
-        </View>
       </View>
-    );
-  }
+
+      <View style={{ marginTop: 30 }}>
+        <MovieCardList data={movieList} renderItem={renderItem} />
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

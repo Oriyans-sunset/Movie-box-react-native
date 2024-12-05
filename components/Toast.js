@@ -32,7 +32,9 @@ export const toastConfig = {
         fontSize: 17,
       }}
       text2Style={{
-        fontSize: 15,
+        fontSize: 17,
+        fontWeight: "300",
+        color: COLORS.darkBlue,
       }}
     />
   ),
